@@ -5,7 +5,7 @@ let app = express();
 
 console.log(process.env.RIOT_API)
 
-app.get('/test', async function (req, res) {
+app.get('/api', async function (req, res) {
     res.setHeader("Content-Type", "image/svg+xml");
     let name = req.query.name;
     
