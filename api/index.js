@@ -9,18 +9,19 @@ app.get('/api', async function (req, res) {
     res.setHeader("Content-Type", "image/svg+xml");
     let name = req.query.name;
     
-    //res.setHeader("Cache-Control", `public, max-age=${30}`);
+    //Conventional cache currently set to very low time, as it disables svg/css-animations
+    res.setHeader("Cache-Control", `public, max-age=${0.5}`);
 
     res.send(await MakeLolCard(name));
-
 })
 
 var server = app.listen(8081, function () {
    var host = server.address().address;
    var port = server.address().port;
-   console.log("Example app listening at http://%s:%s", host, port)
+   console.log(`Listening at http://${host}:${port}`)
 })
 
+//TODO: Clean up this function
 async function MakeLolCard(name){
     let data = await PrevGameDataCached(name);
     
