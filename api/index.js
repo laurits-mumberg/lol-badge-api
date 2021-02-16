@@ -189,13 +189,13 @@ async function PrevGameData(userName){
 
     let {data} = await axios.get(`https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/${encodeURI(userName)}?api_key=${process.env.RIOT_API}`);
     let accountId = data.accountId;
-
+    
     let matchesData = await axios.get(`https://euw1.api.riotgames.com/lol/match/v4/matchlists/by-account/${encodeURI(accountId)}?endIndex=1&api_key=${process.env.RIOT_API}`)
     let prevMatchGameId = matchesData.data.matches[0].gameId;
-
+    
     let prevMatchData = await axios.get(`https://euw1.api.riotgames.com/lol/match/v4/matches/${encodeURI(prevMatchGameId)}?api_key=${process.env.RIOT_API}`)
     prevMatchData = prevMatchData.data;
-    let userParticipantId = prevMatchData.participantIdentities.find(x => x.player.accountId === accountId).participantId;
+    let userParticipantId = prevMatchData.participantIdentities.find(x => x.player.summonerName.toUpperCase() === userName.toUpperCase()).participantId;
     let userParticipantData = prevMatchData.participants.find(x => x.participantId === userParticipantId);
 
     return {
