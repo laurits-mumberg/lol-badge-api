@@ -9,7 +9,7 @@ app.get('/api', async function (req, res) {
     res.setHeader("Content-Type", "image/svg+xml");
     let name = req.query.name;
     
-    res.setHeader("Cache-Control", `public, max-age=${30}`);
+    //res.setHeader("Cache-Control", `public, max-age=${30}`);
 
     res.send(await MakeLolCard(name));
 
