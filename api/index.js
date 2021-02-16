@@ -27,7 +27,6 @@ async function MakeLolCard(name){
     if(data != undefined) {
         let {win, kills, deaths, assists} = data;
         let color = win ? "#008000" : "#8B0000";
-
         return (
         `<svg height="100" width="300" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
             <style>
@@ -113,8 +112,7 @@ async function MakeLolCard(name){
         
         `);
     } else {
-        if (name == undefined) name = "undefined";
-
+        if (name == undefined) name = "";
         return (
             `<svg height="100" width="300" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                 <style>
@@ -185,6 +183,10 @@ async function MakeLolCard(name){
 
 async function PrevGameData(userName){
     console.log("Riot api called")
+    if(userName == undefined){
+        throw Error();
+    }
+
     let {data} = await axios.get(`https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/${encodeURI(userName)}?api_key=${process.env.RIOT_API}`);
     let accountId = data.accountId;
 
@@ -227,11 +229,16 @@ async function PrevGameDataCached(userName){
     // User found in cache. Checking for time since last riot api call.
     else if (Date.now() - cachedData.date > 10000){ //10 sec cache time
         //Update data
-        cachedData.data = await PrevGameData(userName);
+        let newData;
+        try {
+            newData = await PrevGameData(userName);
+        } catch (error) {
+            newData = undefined;
+        }
+        cachedData.data = newData
         cachedData.date = Date.now();
-        console.log(cachedPrevGameData.length);
         return cachedData.data;
     }
-
+    console.log(userName + " found in cache. cached count: " + cachedPrevGameData.length);
     return cachedData.data;
 }
