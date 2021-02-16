@@ -227,7 +227,7 @@ async function PrevGameDataCached(userName){
         return newData
     }
     // User found in cache. Checking for time since last riot api call.
-    else if (Date.now() - cachedData.date > 10000){ //10 sec cache time
+    else if (Date.now() - cachedData.date > 1800000){ //10 sec cache time
         //Update data
         let newData;
         try {
