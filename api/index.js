@@ -182,28 +182,53 @@ async function MakeLolCard(name){
     }
 }
 
+class UserGameStats{
+    constructor(name, win, kills, deaths, assists){
+        this.name = name;
+        this.win = win;
+        this.kills = kills;
+        this.deatss = deaths;
+        this.assists = assists;
+    }
+}
+
+class CachedUserGameStats{
+    constructor(userGameStats, date){
+        this.userGameStats = userGameStats;
+        this.date = date;
+    }
+    dataShouldBeUpdated() {
+        return Date.now() - this.date > 1800000
+    }
+}
+
 async function PrevGameData(userName){
     console.log("Riot api called")
     if(userName == undefined){
         throw Error();
     }
 
+    // Gets puuid, which is a unique id used by riot apis
     let {data} = await axios.get(`https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/${encodeURI(userName)}?api_key=${process.env.RIOT_API}`);
-    let accountId = data.accountId;
+    let puuid = data.puuid;
+    console.log('puuid:', puuid)
     
-    let matchesData = await axios.get(`https://euw1.api.riotgames.com/lol/match/v4/matchlists/by-account/${encodeURI(accountId)}?endIndex=1&api_key=${process.env.RIOT_API}`)
-    let prevMatchGameId = matchesData.data.matches[0].gameId;
+    // Gets the id for the last game
+    let matchesData = await axios.get(`https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/${encodeURI(puuid)}/ids?api_key=${process.env.RIOT_API}`)
+    let prevMatchGameId = matchesData.data[0];
+    console.log('gameid: ',prevMatchGameId)
     
-    let prevMatchData = await axios.get(`https://euw1.api.riotgames.com/lol/match/v4/matches/${encodeURI(prevMatchGameId)}?api_key=${process.env.RIOT_API}`)
-    prevMatchData = prevMatchData.data;
-    let userParticipantId = prevMatchData.participantIdentities.find(x => x.player.summonerName.toUpperCase() === userName.toUpperCase()).participantId;
-    let userParticipantData = prevMatchData.participants.find(x => x.participantId === userParticipantId);
+
+    // Gets the data for the specific player
+    let prevMatchData = await axios.get(`https://europe.api.riotgames.com/lol/match/v5/matches/${encodeURI(prevMatchGameId)}?api_key=${process.env.RIOT_API}`)
+    playerSpecificData = prevMatchData.data.info.participants.find(participant => participant.puuid === puuid);
+    console.log(playerSpecificData.win)
 
     return {
-        win: userParticipantData.stats.win,
-        kills: userParticipantData.stats.kills,
-        deaths: userParticipantData.stats.deaths,
-        assists: userParticipantData.stats.assists
+        win: playerSpecificData.win,
+        kills: playerSpecificData.kills,
+        deaths: playerSpecificData.deaths,
+        assists: playerSpecificData.assists
     }
 }
 
@@ -227,6 +252,7 @@ async function PrevGameDataCached(userName){
         });
         return newData
     }
+
     // User found in cache. Checking for time since last riot api call.
     else if (Date.now() - cachedData.date > 1800000){ //10 sec cache time
         //Update data
