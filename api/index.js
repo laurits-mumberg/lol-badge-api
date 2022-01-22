@@ -116,6 +116,7 @@ async function PrevGameDataCached(userName){
         try {
             newData = await PrevGameData(userName)
         } catch (error) {
+            console.log(error)
             throw error
         }
 
