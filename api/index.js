@@ -28,11 +28,20 @@ async function MakeLolCard(name){
     try {
         usetGameStats = await PrevGameDataCached(name)
     } catch (error) {
-        let [err1, err2, err3] = error.split('\r')
+        let err1, err2, err3;
+        
+        // Try to get descriptive error msg.
+        try {
+        [err1, err2, err3] = error.split('\r')
+        } catch (error) {
+            err1 = 'sorry';
+            err2 = 'not';
+            err3 = 'working'
+        }
+
         return cardCreator.MakeErrorCard(err1, err2, err3)
     }
 
-    console.log('Det gik godt')
    return cardCreator.MakeWinLoseCard(await usetGameStats)
     
 }
@@ -60,14 +69,19 @@ class CachedUserGameStats{
 // Gets the data from the players most recent game. Returns UserGameStats
 async function PrevGameData(userName){
     if(userName == undefined){
-        console.log('throwing...')
         throw 'No user given.\rAdd ?name=(your name)\rto the end of the url';
     }
     
     console.log("Riot api called")
     // Gets puuid, which is a unique id used by riot apis
-    let {data} = await axios.get(`https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/${encodeURI(userName)}?api_key=${process.env.RIOT_API}`);
-    let puuid = data.puuid;
+    let userData;
+    try {
+        userData = await axios.get(`https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/${encodeURI(userName)}?api_key=${process.env.RIOT_API}`)
+    } catch (error) {
+        if (error.response.status == 404) { throw (userName + '\rnot found\ron EUW')}
+        else { throw 'API\rERROR\r?XD'}
+    }
+    let puuid = userData.data.puuid;
     console.log('puuid:', puuid)
     
     // Gets the id for the last game
