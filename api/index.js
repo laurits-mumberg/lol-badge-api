@@ -78,6 +78,7 @@ async function PrevGameData(userName){
     try {
         userData = await axios.get(`https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/${encodeURI(userName)}?api_key=${process.env.RIOT_API}`)
     } catch (error) {
+        console.log(error.response)
         if (error.response.status == 404) { throw (userName + '\rnot found\ron EUW')}
         else { throw 'API\rERROR\r?XD ' + error.response.status}
     }
