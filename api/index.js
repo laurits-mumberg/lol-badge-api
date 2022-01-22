@@ -46,6 +46,7 @@ async function MakeLolCard(name){
     
 }
 
+
 class UserGameStats{
     constructor(name, win, kills, deaths, assists){
         this.name = name;
